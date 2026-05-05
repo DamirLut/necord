@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Client, Collection } from 'discord.js';
+import { ApplicationCommandType, Client, Collection } from 'discord.js';
 import { CommandDiscovery } from './command.discovery';
 import { ContextMenusService } from './context-menus';
 import { SlashCommandsService } from './slash-commands';
@@ -38,13 +38,20 @@ export class CommandsService {
 	public async registerGlobalCommands() {
 		const commands = this.getGlobalCommands();
 		const rawCommands = commands.flatMap(command => command.toJSON());
+		/**
+		 * Adding entry point commands to the payload to prevent DiscordAPIError[50240]
+		 * "You cannot remove this app's Entry Point command in a bulk update operation"
+		 **/
+		const entryPointCommands = await this.getEntryPointCommands();
 
-		if (rawCommands.length === 0) {
+		const payload = [...rawCommands, ...entryPointCommands];
+
+		if (payload.length === 0) {
 			return;
 		}
 
-		this.logger.debug(`Registering ${rawCommands.length} global application commands...`);
-		return this.client.application.commands.set(rawCommands).catch(error => {
+		this.logger.debug(`Registering ${payload.length} global application commands...`);
+		return this.client.application.commands.set(payload).catch(error => {
 			this.logger.error(
 				`Failed to register application commands (global): ${error}`,
 				error.stack
@@ -120,5 +127,19 @@ export class CommandsService {
 
 	public getGuildCommandByName(guildId: string, name: string): CommandDiscovery {
 		return this.getGuildCommands(guildId).find(command => command.getName() === name);
+	}
+
+	private async getEntryPointCommands() {
+		const existingCommands = await this.client.application.commands.fetch();
+
+		return existingCommands
+			.filter(cmd => cmd.type === ApplicationCommandType.PrimaryEntryPoint)
+			.map(cmd => ({
+				id: cmd.id,
+				name: cmd.name,
+				description: cmd.description,
+				type: cmd.type,
+				handler: cmd.handler
+			}));
 	}
 }
