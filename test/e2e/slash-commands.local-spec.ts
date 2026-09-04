@@ -1,19 +1,19 @@
-import { createApplication } from './utils.local-spec';
-import {
-	AsyncCustomListenerContext,
-	createCommandGroupDecorator,
-	Ctx,
-	On,
-	Opts,
-	Subcommand
-} from '../../src';
 import { CommandInteraction } from 'discord.js';
-import { LengthDto } from './dto/length.dto';
+
+import { createCommandGroupDecorator, Ctx, Opts, Subcommand } from '../../src/index.js';
+import { createApplication } from './utils.local-spec.js';
+import { LengthDto } from './dto/length.dto.js';
+
+const testGuild = process.env.DISCORD_TEST_GUILD;
+
+if (!testGuild) {
+	throw new Error('DISCORD_TEST_GUILD is required to run the local E2E application.');
+}
 
 const UtilsCommands = createCommandGroupDecorator({
 	name: 'utils',
 	description: 'Test group',
-	guilds: [process.env.DISCORD_TEST_GUILD]
+	guilds: [testGuild]
 });
 
 @UtilsCommands()

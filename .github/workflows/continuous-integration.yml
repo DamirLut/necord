@@ -12,32 +12,40 @@ permissions:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build and Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20.19.0', '22.13.0', 'lts/*']
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Install Node v22
-        uses: actions/setup-node@v6
+      - name: Install Node
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: yarn
-          cache-dependency-path: yarn.lock
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
-      - name: Run ESlint
-        run: yarn lint
+      - name: Run Oxlint
+        run: npm run lint
 
-      - name: Run Build
-        run: yarn build
+      - name: Run TypeScript typecheck
+        run: npm run typecheck
 
-      - name: Run Tests
-        run: yarn test:ci
+      - name: Build package
+        run: npm run build
+
+      - name: Run Vitest with coverage
+        run: npm run test:ci
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v6
+        if: matrix.node-version == 'lts/*'
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

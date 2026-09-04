@@ -1,11 +1,12 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import {
 	ChannelSelectMenuInteraction,
 	Collection,
 	RoleSelectMenuInteraction,
 	UserSelectMenuInteraction
 } from 'discord.js';
-import { NecordExecutionContext } from '../../context';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+import { NecordExecutionContext } from '../../context/index.js';
 
 export const SelectedStrings = createParamDecorator<any, string[]>((_, ctx: ExecutionContext) => {
 	const necordContext = NecordExecutionContext.create(ctx);

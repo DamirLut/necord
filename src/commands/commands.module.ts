@@ -6,12 +6,13 @@ import {
 	OnApplicationBootstrap,
 	OnModuleInit
 } from '@nestjs/common';
-import { ContextMenusModule } from './context-menus';
-import { SlashCommandsModule } from './slash-commands';
-import { CommandsService } from './commands.service';
 import { Client } from 'discord.js';
-import { NECORD_MODULE_OPTIONS } from '../necord.module-definition';
-import { NecordModuleOptions } from '../necord-options.interface';
+
+import { NECORD_MODULE_OPTIONS } from '../necord.module-definition.js';
+import { NecordModuleOptions } from '../necord-options.interface.js';
+import { SlashCommandsModule } from './slash-commands/index.js';
+import { ContextMenusModule } from './context-menus/index.js';
+import { CommandsService } from './commands.service.js';
 
 @Global()
 @Module({
@@ -19,7 +20,7 @@ import { NecordModuleOptions } from '../necord-options.interface';
 	providers: [CommandsService],
 	exports: [ContextMenusModule, SlashCommandsModule, CommandsService]
 })
-export class CommandsModule implements OnModuleInit, OnApplicationBootstrap {
+export class CommandsModule implements OnApplicationBootstrap, OnModuleInit {
 	private readonly logger = new Logger(CommandsModule.name);
 
 	public constructor(
@@ -35,8 +36,14 @@ export class CommandsModule implements OnModuleInit, OnApplicationBootstrap {
 		}
 
 		return this.client.once('clientReady', async () => {
-			if (this.client.application.partial) {
-				await this.client.application.fetch();
+			const application = this.client.application;
+
+			if (!application) {
+				throw new Error('Discord client application is unavailable after clientReady.');
+			}
+
+			if (application.partial) {
+				await application.fetch();
 			}
 
 			return this.commandsService.registerAllCommands();

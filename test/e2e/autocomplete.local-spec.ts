@@ -1,14 +1,15 @@
-import { Injectable, UseInterceptors } from '@nestjs/common';
 import { AutocompleteInteraction, CommandInteraction } from 'discord.js';
-import { AutocompleteInterceptor, Ctx, Opts, SlashCommand } from '../../src';
-import { createApplication } from './utils.local-spec';
-import { Style, ThemeDto } from './dto/theme.dto';
+import { Injectable, UseInterceptors } from '@nestjs/common';
+
+import { AutocompleteInterceptor, Ctx, Opts, SlashCommand } from '../../src/index.js';
+import { createApplication } from './utils.local-spec.js';
+import { Style, ThemeDto } from './dto/theme.dto.js';
 
 @Injectable()
 class ThemeAutocompleteInterceptor extends AutocompleteInterceptor {
 	public transformOptions(interaction: AutocompleteInteraction) {
 		const focused = interaction.options.getFocused(true);
-		let choices: string[];
+		let choices: string[] = [];
 
 		if (focused.name === 'style') {
 			choices = Object.values(Style);
@@ -24,8 +25,8 @@ class ThemeAutocompleteInterceptor extends AutocompleteInterceptor {
 
 @Injectable()
 export class AutocompleteLocalSpec {
-	@UseInterceptors(ThemeAutocompleteInterceptor)
 	@SlashCommand({ name: 'theme', description: 'Select new theme style' })
+	@UseInterceptors(ThemeAutocompleteInterceptor)
 	public theme(@Ctx() [interaction]: [CommandInteraction], @Opts() { style }: ThemeDto) {
 		return interaction.reply({
 			content: `You selected **${style}** style`

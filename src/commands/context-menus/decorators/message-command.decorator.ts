@@ -1,6 +1,7 @@
-import { ContextMenuMeta } from '../context-menu.discovery';
 import { ApplicationCommandType } from 'discord.js';
-import { ContextMenu } from './context-menu.decorator';
+
+import { ContextMenuMeta } from '../context-menu.discovery.js';
+import { ContextMenu } from './context-menu.decorator.js';
 
 /**
  * Decorator that marks a method as a message context menu.

@@ -1,6 +1,7 @@
-import { RootCommandMeta, SlashCommandDiscovery } from '../slash-command.discovery';
 import { ApplicationCommandType } from 'discord.js';
 import { Reflector } from '@nestjs/core';
+
+import { RootCommandMeta, SlashCommandDiscovery } from '../slash-command.discovery.js';
 
 /**
  * Decorator that marks a method as a slash command.

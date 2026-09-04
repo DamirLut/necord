@@ -1,17 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { ContextId, ModuleRef } from '@nestjs/core';
+import { ParamMetadata } from '@nestjs/core/helpers/interfaces/params-metadata.interface';
 import { ExternalContextCreator } from '@nestjs/core/helpers/external-context-creator';
-import { ParamMetadata } from '@nestjs/core/helpers/interfaces';
+import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
+import { STATIC_CONTEXT } from '@nestjs/core/injector/constants';
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
+import { ContextId, ModuleRef } from '@nestjs/core';
+import { Injectable } from '@nestjs/common';
+
 import {
 	NecordBaseDiscovery,
 	NecordContextType,
 	NecordParamsFactory,
 	NecordParamType
-} from './context';
-import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { STATIC_CONTEXT } from '@nestjs/core/injector/constants';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { AsyncContext } from './scopes';
+} from './context/index.js';
+import { AsyncContext } from './scopes/index.js';
 
 @Injectable()
 export class NecordContextCreator {
@@ -26,7 +27,13 @@ export class NecordContextCreator {
 			return this.createContextCallback(instance, methodName);
 		}
 
-		const { instance: moduleRef } = wrapper.host.getProviderByKey<ModuleRef>(ModuleRef);
+		const host = wrapper.host;
+
+		if (!host) {
+			throw new Error('A request-scoped provider must have a Nest module host.');
+		}
+
+		const { instance: moduleRef } = host.getProviderByKey<ModuleRef>(ModuleRef);
 
 		return async (...args: any[]) => {
 			const necordContext = this.necordParamsFactory.exchangeKeyForValue(
@@ -41,6 +48,10 @@ export class NecordContextCreator {
 				context.attachTo(necordContext);
 			}
 
+			if (!wrapper.metatype) {
+				throw new Error('A request-scoped provider must have a metatype.');
+			}
+
 			const requestScopedInstance = await moduleRef.resolve(wrapper.metatype, context.id, {
 				strict: true
 			});
@@ -51,12 +62,12 @@ export class NecordContextCreator {
 				context.id,
 				wrapper.id
 			);
-			return contextCallback(...args);
+			return contextCallback?.(...args);
 		};
 	}
 
 	private createContextCallback(
-		instance: object,
+		instance: object | undefined,
 		methodName: string,
 		contextId: ContextId = STATIC_CONTEXT,
 		wrapperId?: string
@@ -66,14 +77,15 @@ export class NecordContextCreator {
 		}
 
 		const prototype = Object.getPrototypeOf(instance);
+		const handler = prototype?.[methodName];
 
-		if (!prototype || !prototype[methodName]) {
+		if (typeof handler !== 'function') {
 			return;
 		}
 
 		return this.externalContextCreator.create<Record<number, ParamMetadata>, NecordContextType>(
 			instance,
-			prototype[methodName],
+			handler,
 			methodName,
 			ROUTE_ARGS_METADATA,
 			this.necordParamsFactory,

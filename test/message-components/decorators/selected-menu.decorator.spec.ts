@@ -1,14 +1,14 @@
+import { ComponentType } from 'discord-api-types/v10';
+
 import {
 	ChannelSelect,
 	MentionableSelect,
 	MessageComponent,
 	MessageComponentDiscovery,
-	ModalDiscovery,
 	RoleSelect,
 	StringSelect,
 	UserSelect
-} from '../../../src';
-import { ComponentType } from 'discord-api-types/v10';
+} from '../../../src/index.js';
 
 describe('Selected Menu Decorators', () => {
 	describe.each([

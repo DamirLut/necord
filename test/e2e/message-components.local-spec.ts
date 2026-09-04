@@ -1,4 +1,19 @@
 import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelSelectMenuBuilder,
+	ChannelType,
+	MentionableSelectMenuBuilder,
+	RoleSelectMenuBuilder,
+	SelectMenuBuilder,
+	StringSelectMenuBuilder,
+	UserSelectMenuBuilder
+} from 'discord.js';
+import { MessageActionRowComponentBuilder } from '@discordjs/builders';
+import { Injectable } from '@nestjs/common';
+
+import {
 	Button,
 	ButtonContext,
 	ChannelSelect,
@@ -22,23 +37,10 @@ import {
 	SlashCommandContext,
 	StringSelect,
 	StringSelectContext,
+	UserSelect,
 	UserSelectContext
-} from '../../src';
-import { Injectable } from '@nestjs/common';
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChannelSelectMenuBuilder,
-	ChannelType,
-	MentionableSelectMenuBuilder,
-	RoleSelectMenuBuilder,
-	SelectMenuBuilder,
-	StringSelectMenuBuilder,
-	UserSelectMenuBuilder
-} from 'discord.js';
-import { MessageActionRowComponentBuilder } from '@discordjs/builders';
-import { createApplication } from './utils.local-spec';
+} from '../../src/index.js';
+import { createApplication } from './utils.local-spec.js';
 
 @Injectable()
 export class MessageComponentsLocalSpec {

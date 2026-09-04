@@ -1,27 +1,32 @@
-import { Test } from '@nestjs/testing';
+import type { Mock } from 'vitest';
+
 import { Client, Message } from 'discord.js';
+import { Test } from '@nestjs/testing';
+
 import {
 	NECORD_MODULE_OPTIONS,
 	NecordExplorerService,
 	NecordModule,
 	TextCommand,
-	TextCommandDiscovery,
 	TextCommandsModule,
 	TextCommandsService
-} from '../../src';
+} from '../../src/index.js';
 
 describe('TextCommandsModule', () => {
 	let client: Client;
-	let textCommandsService: TextCommandsService;
-	let explorerService: NecordExplorerService<TextCommandDiscovery>;
+	let textCommandsServiceMock: { add: Mock; get: Mock };
+	let explorerServiceMock: { explore: Mock };
 	let emitMessageCreate: (message: Partial<Message>) => void;
 
-	beforeEach(async () => {
+	const createModule = async (options: Record<string, unknown> = { prefix: '!' }) => {
 		client = new Client({ intents: [] });
-		textCommandsService = { add: jest.fn(), get: jest.fn() } as any;
-		explorerService = {
-			explore: jest.fn().mockReturnValue([{ name: 'test' }])
-		} as any;
+		textCommandsServiceMock = {
+			add: vi.fn<(...args: any[]) => any>(),
+			get: vi.fn<(...args: any[]) => any>()
+		};
+		explorerServiceMock = {
+			explore: vi.fn<(...args: any[]) => any>().mockReturnValue([{ name: 'test' }])
+		};
 
 		const moduleRef = await Test.createTestingModule({
 			imports: [
@@ -30,17 +35,17 @@ describe('TextCommandsModule', () => {
 			]
 		})
 			.overrideProvider(NECORD_MODULE_OPTIONS)
-			.useValue({ prefix: '!' })
+			.useValue(options)
 			.overrideProvider(Client)
 			.useValue(client)
 			.overrideProvider(TextCommandsService)
-			.useValue(textCommandsService)
+			.useValue(textCommandsServiceMock)
 			.overrideProvider(NecordExplorerService)
-			.useValue(explorerService)
+			.useValue(explorerServiceMock)
 			.compile();
 
 		const instance = moduleRef.get(TextCommandsModule);
-		instance.onModuleInit();
+		await instance.onModuleInit();
 		instance.onApplicationBootstrap();
 
 		// simulate client.on('messageCreate')
@@ -48,16 +53,20 @@ describe('TextCommandsModule', () => {
 			const listener = client.rawListeners('messageCreate')[0];
 			if (listener) listener(message);
 		};
+	};
+
+	beforeEach(async () => {
+		await createModule();
 	});
 
 	it('should add commands on module init', () => {
-		expect(explorerService.explore).toHaveBeenCalledWith(TextCommand.KEY);
-		expect(textCommandsService.add).toHaveBeenCalledWith({ name: 'test' });
+		expect(explorerServiceMock.explore).toHaveBeenCalledWith(TextCommand.KEY);
+		expect(textCommandsServiceMock.add).toHaveBeenCalledWith({ name: 'test' });
 	});
 
 	it('should handle valid command message', async () => {
-		const execute = jest.fn();
-		(textCommandsService.get as jest.Mock).mockReturnValue({ execute });
+		const execute = vi.fn<(...args: any[]) => any>();
+		textCommandsServiceMock.get.mockReturnValue({ execute });
 
 		const msg = {
 			content: '!hello',
@@ -69,12 +78,33 @@ describe('TextCommandsModule', () => {
 		expect(execute).toHaveBeenCalledWith([msg]);
 	});
 
+	it('should ignore messages without prefix by default', () => {
+		emitMessageCreate({ content: 'hello', author: { bot: false } } as any);
+
+		expect(textCommandsServiceMock.get).not.toHaveBeenCalled();
+	});
+
+	it('should handle messages without prefix when allowed globally', async () => {
+		await createModule({ prefix: '!', allowTextCommandsWithoutPrefix: true });
+
+		const execute = vi.fn<(...args: any[]) => any>();
+		textCommandsServiceMock.get.mockReturnValue({ execute });
+
+		const msg = {
+			content: 'hello',
+			author: { bot: false }
+		};
+
+		emitMessageCreate(msg as any);
+		expect(textCommandsServiceMock.get).toHaveBeenCalledWith('hello');
+		expect(execute).toHaveBeenCalledWith([msg]);
+	});
+
 	it('should ignore bot messages and invalid formats', () => {
 		emitMessageCreate({ content: '', author: { bot: true } } as any);
 		emitMessageCreate({ content: null, author: { bot: false } } as any);
 		emitMessageCreate({ content: 'hi', webhookId: '123', author: { bot: false } } as any);
-		emitMessageCreate({ content: 'hi', author: { bot: false } } as any);
 
-		expect(textCommandsService.get).not.toHaveBeenCalled();
+		expect(textCommandsServiceMock.get).not.toHaveBeenCalled();
 	});
 });

@@ -1,20 +1,21 @@
-import { Global, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
-import { CustomListener, CustomListenerHandler, Listener } from './decorators';
-import { Client } from 'discord.js';
-import { NecordExplorerService } from '../necord-explorer.service';
-import { ListenerDiscovery } from './listener.discovery';
 import { DiscoveryModule, DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import * as CustomListeners from './handlers';
-import { AsyncCustomListenerContext, AsyncCustomListenerContextOptions } from './scopes';
+import { Global, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { Client } from 'discord.js';
 
-const { BaseHandler, ...listeners } = CustomListeners;
+import { AsyncCustomListenerContext, AsyncCustomListenerContextOptions } from './scopes/index.js';
+import { CustomListener, CustomListenerHandler, Listener } from './decorators/index.js';
+import { NecordExplorerService } from '../necord-explorer.service.js';
+import { ListenerDiscovery } from './listener.discovery.js';
+import * as CustomListeners from './handlers/index.js';
+
+const { BaseHandler: _, ...LISTENERS } = CustomListeners;
 
 @Global()
 @Module({
 	imports: [DiscoveryModule],
-	providers: Object.values(listeners)
+	providers: Object.values(LISTENERS)
 })
-export class ListenersModule implements OnModuleInit, OnApplicationBootstrap {
+export class ListenersModule implements OnApplicationBootstrap, OnModuleInit {
 	public constructor(
 		private readonly client: Client,
 		private readonly explorerService: NecordExplorerService<ListenerDiscovery>,
@@ -45,6 +46,11 @@ export class ListenersModule implements OnModuleInit, OnApplicationBootstrap {
 			);
 
 			const instance = wrapper.instance;
+
+			if (!customListener || !instance) {
+				continue;
+			}
+
 			const prototype = Object.getPrototypeOf(instance);
 			const methods = this.metadataScanner
 				.getAllMethodNames(prototype)

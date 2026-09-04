@@ -1,8 +1,9 @@
-import { Context, Discovery, NecordParamType } from '../../../src';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 
+import { Discovery, NecordParamType } from '../../../src/index.js';
+
 class Cls {
-	method(@Discovery() context: any) {}
+	method(@Discovery() _context: any) {}
 }
 
 describe('@Discovery', () => {

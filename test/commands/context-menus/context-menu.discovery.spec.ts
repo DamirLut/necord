@@ -1,5 +1,6 @@
-import { ContextMenuDiscovery } from '../../../src';
 import { ApplicationCommandType } from 'discord.js';
+
+import { ContextMenuDiscovery } from '../../../src/index.js';
 
 describe('ContextMenuDiscovery', () => {
 	it('should be defined', () => {
@@ -21,7 +22,7 @@ describe('ContextMenuDiscovery', () => {
 	});
 
 	it('should execute', () => {
-		const mockExecute = jest.fn();
+		const mockExecute = vi.fn<(...args: any[]) => any>();
 		const discovery = new ContextMenuDiscovery({
 			name: 'test',
 			type: ApplicationCommandType.User

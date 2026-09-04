@@ -9,15 +9,14 @@ import {
 	Snowflake
 } from 'discord.js';
 import { APIApplicationCommandOptionBase } from 'discord-api-types/v10';
-import { CommandDiscovery } from '../command.discovery';
-import { OPTIONS_METADATA } from './options';
 
-export type RootCommandMeta = ChatInputApplicationCommandData & { guilds?: Snowflake[] };
+import { CommandDiscovery } from '../command.discovery.js';
+import { OPTIONS_METADATA } from './options/index.js';
+
+export type RootCommandMeta = { guilds?: Snowflake[] } & ChatInputApplicationCommandData;
 export type SubcommandGroupMeta = ApplicationCommandSubGroupData;
 export type SubcommandMeta = ApplicationCommandSubCommandData;
-
 export type SlashCommandMeta = RootCommandMeta | SubcommandGroupMeta | SubcommandMeta;
-
 export interface OptionMeta extends APIApplicationCommandOptionBase<any> {
 	resolver?: keyof CommandInteractionOptionResolver;
 }
@@ -71,7 +70,9 @@ export class SlashCommandDiscovery extends CommandDiscovery<SlashCommandMeta> {
 	 * Returns raw options from metadata.
 	 */
 	public getRawOptions(): Record<string, OptionMeta> {
-		return this.reflector.get(OPTIONS_METADATA, this.getHandler()) ?? {};
+		const handler = this.getHandler();
+
+		return handler ? (this.reflector.get(OPTIONS_METADATA, handler) ?? {}) : {};
 	}
 
 	/**

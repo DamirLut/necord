@@ -4,14 +4,15 @@ import {
 	Snowflake,
 	UserApplicationCommandData
 } from 'discord.js';
-import { CommandDiscovery } from '../command.discovery';
+
+import { CommandDiscovery } from '../command.discovery.js';
 
 /**
  * The context menu metadata.
  */
-export type ContextMenuMeta = (MessageApplicationCommandData | UserApplicationCommandData) & {
+export type ContextMenuMeta = {
 	guilds?: Snowflake[];
-};
+} & (MessageApplicationCommandData | UserApplicationCommandData);
 
 /**
  * The context menu discovery.

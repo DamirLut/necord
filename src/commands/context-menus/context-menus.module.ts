@@ -1,16 +1,17 @@
 import { Global, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
-import { ContextMenusService } from './context-menus.service';
-import { NecordExplorerService } from '../../necord-explorer.service';
-import { ContextMenuDiscovery } from './context-menu.discovery';
 import { Client } from 'discord.js';
-import { ContextMenu } from './decorators';
+
+import { NecordExplorerService } from '../../necord-explorer.service.js';
+import { ContextMenuDiscovery } from './context-menu.discovery.js';
+import { ContextMenusService } from './context-menus.service.js';
+import { ContextMenu } from './decorators/index.js';
 
 @Global()
 @Module({
 	providers: [ContextMenusService],
 	exports: [ContextMenusService]
 })
-export class ContextMenusModule implements OnModuleInit, OnApplicationBootstrap {
+export class ContextMenusModule implements OnApplicationBootstrap, OnModuleInit {
 	public constructor(
 		private readonly client: Client,
 		private readonly explorerService: NecordExplorerService<ContextMenuDiscovery>,

@@ -1,4 +1,3 @@
-import { Client } from 'discord.js';
 import {
 	Global,
 	Inject,
@@ -6,17 +5,19 @@ import {
 	OnApplicationBootstrap,
 	OnApplicationShutdown
 } from '@nestjs/common';
-import { NecordModuleOptions } from './necord-options.interface';
-import { ConfigurableModuleClass, NECORD_MODULE_OPTIONS } from './necord.module-definition';
-import { TextCommandsModule } from './text-commands';
-import { ModalsModule } from './modals';
-import { MessageComponentsModule } from './message-components';
-import * as ProvidersMap from './providers';
-import { ListenersModule } from './listeners';
-import { NecordExplorerService } from './necord-explorer.service';
-import { CommandsModule } from './commands';
 import { DiscoveryModule } from '@nestjs/core';
-import { NecordContextCreator } from './necord-context.creator';
+import { Client } from 'discord.js';
+
+import { ConfigurableModuleClass, NECORD_MODULE_OPTIONS } from './necord.module-definition.js';
+import { MessageComponentsModule } from './message-components/index.js';
+import { NecordExplorerService } from './necord-explorer.service.js';
+import { NecordModuleOptions } from './necord-options.interface.js';
+import { NecordContextCreator } from './necord-context.creator.js';
+import { TextCommandsModule } from './text-commands/index.js';
+import { ListenersModule } from './listeners/index.js';
+import * as ProvidersMap from './providers/index.js';
+import { CommandsModule } from './commands/index.js';
+import { ModalsModule } from './modals/index.js';
 
 const Providers = Object.values(ProvidersMap);
 
@@ -58,7 +59,7 @@ export class NecordModule
 		return this.client.login(this.options.token);
 	}
 
-	public onApplicationShutdown(signal?: string) {
+	public onApplicationShutdown(_signal?: string) {
 		return this.client.destroy();
 	}
 }

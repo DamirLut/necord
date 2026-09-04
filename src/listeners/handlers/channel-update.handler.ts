@@ -1,13 +1,14 @@
-import { BaseHandler } from './base.handler';
-import { Injectable } from '@nestjs/common';
-import { CustomListener, CustomListenerHandler } from '../decorators';
-import { ContextOf } from '../../context';
 import {
 	DMChannel,
 	GuildChannel,
 	NonThreadGuildBasedChannel,
 	PermissionOverwriteManager
 } from 'discord.js';
+import { Injectable } from '@nestjs/common';
+
+import { CustomListener, CustomListenerHandler } from '../decorators/index.js';
+import { ContextOf } from '../../context/index.js';
+import { BaseHandler } from './base.handler.js';
 
 export type CustomChannelUpdateEvents = {
 	guildChannelPermissionsUpdate: [
@@ -17,8 +18,8 @@ export type CustomChannelUpdateEvents = {
 	];
 };
 
-@Injectable()
 @CustomListener('channelUpdate')
+@Injectable()
 export class ChannelUpdateHandler extends BaseHandler<CustomChannelUpdateEvents> {
 	@CustomListenerHandler()
 	public handleGuildChannelPermissionsUpdate([

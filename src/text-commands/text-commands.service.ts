@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Collection } from 'discord.js';
-import { TextCommandDiscovery } from './text-command.discovery';
+
+import { TextCommandDiscovery } from './text-command.discovery.js';
 
 /**
  * Service that manages text commands.
@@ -13,12 +14,21 @@ export class TextCommandsService {
 
 	public add(textCommand: TextCommandDiscovery) {
 		const name = textCommand.getName();
+		const aliases = textCommand.getAliases();
 
 		if (this.cache.has(name)) {
 			this.logger.warn(`TextCommand : ${name} already exists`);
 		}
 
-		this.cache.set(name, textCommand);
+		const variants = [name, ...aliases];
+
+		for (const variant of variants) {
+			if (this.cache.has(variant)) {
+				this.logger.warn(`TextCommand : ${variant} already exists`);
+			}
+
+			this.cache.set(variant, textCommand);
+		}
 	}
 
 	public get(name: string) {

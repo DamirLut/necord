@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { CustomListener, CustomListenerHandler } from '../decorators';
-import { BaseHandler } from './base.handler';
-import { ContextOf } from '../../context';
 import { UserPrimaryGuild, User, UserFlagsBitField } from 'discord.js';
+import { Injectable } from '@nestjs/common';
+
+import { CustomListener, CustomListenerHandler } from '../decorators/index.js';
+import { ContextOf } from '../../context/index.js';
+import { BaseHandler } from './base.handler.js';
 
 export type CustomUserUpdateEvents = {
 	userAvatarUpdate: [user: User, oldAvatar: string, newAvatar: string];
@@ -10,18 +11,18 @@ export type CustomUserUpdateEvents = {
 	userDiscriminatorUpdate: [user: User, oldDiscriminator: string, newDiscriminator: string];
 	userFlagsUpdate: [
 		user: User,
-		oldFlags: Readonly<UserFlagsBitField>,
-		newFlags: Readonly<UserFlagsBitField>
+		oldFlags: Readonly<UserFlagsBitField> | null,
+		newFlags: Readonly<UserFlagsBitField> | null
 	];
 	userPrimaryGuildUpdate: [
 		user: User,
-		oldPrimaryGuild: UserPrimaryGuild,
-		newPrimaryGuild: UserPrimaryGuild
+		oldPrimaryGuild: UserPrimaryGuild | null,
+		newPrimaryGuild: UserPrimaryGuild | null
 	];
 };
 
-@Injectable()
 @CustomListener('userUpdate')
+@Injectable()
 export class UserUpdateHandler extends BaseHandler<CustomUserUpdateEvents> {
 	@CustomListenerHandler()
 	public handleUserAvatarUpdate([oldUser, newUser]: ContextOf<'userUpdate'>) {

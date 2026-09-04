@@ -1,6 +1,3 @@
-import { Injectable } from '@nestjs/common';
-import { Ctx, Modal, ModalContext, ModalParam, SlashCommand, SlashCommandContext } from '../../src';
-import { createApplication } from './utils.local-spec';
 import {
 	ActionRowBuilder,
 	ModalActionRowComponentBuilder,
@@ -8,6 +5,17 @@ import {
 	TextInputBuilder,
 	TextInputStyle
 } from 'discord.js';
+import { Injectable } from '@nestjs/common';
+
+import {
+	Ctx,
+	Modal,
+	ModalContext,
+	ModalParam,
+	SlashCommand,
+	SlashCommandContext
+} from '../../src/index.js';
+import { createApplication } from './utils.local-spec.js';
 
 @Injectable()
 export class ContextMenuSpec {

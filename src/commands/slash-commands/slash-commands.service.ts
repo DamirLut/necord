@@ -1,8 +1,9 @@
-import { Injectable, Logger, Scope } from '@nestjs/common';
-import { SlashCommandDiscovery } from './slash-command.discovery';
-import { Collection } from 'discord.js';
+import { Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { SlashCommand, SubcommandGroup } from './decorators';
+import { Collection } from 'discord.js';
+
+import { SlashCommand, SubcommandGroup } from './decorators/index.js';
+import { SlashCommandDiscovery } from './slash-command.discovery.js';
 
 /**
  * Represents a service that manages slash commands.
@@ -24,7 +25,7 @@ export class SlashCommandsService {
 		this.cache.set(command.getName(), command);
 	}
 
-	public get(commandName: string): SlashCommandDiscovery {
+	public get(commandName: string): SlashCommandDiscovery | undefined {
 		return this.cache.get(commandName);
 	}
 
@@ -41,6 +42,10 @@ export class SlashCommandsService {
 			SubcommandGroup.KEY,
 			subCommand.getClass()
 		);
+
+		if (!rootCommand) {
+			throw new Error('A subcommand must belong to a root slash command.');
+		}
 
 		rootCommand = this.cache.ensure(rootCommand.getName(), () => rootCommand);
 

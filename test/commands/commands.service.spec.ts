@@ -1,5 +1,6 @@
-import { CommandsService, ContextMenuDiscovery, SlashCommandDiscovery } from '../../src';
 import { ApplicationCommandType, Collection } from 'discord.js';
+
+import { CommandsService, ContextMenuDiscovery, SlashCommandDiscovery } from '../../src/index.js';
 
 class Test {
 	method() {}
@@ -11,7 +12,8 @@ describe('CommandsService', () => {
 	const clientMock = {
 		application: {
 			commands: {
-				set: jest.fn().mockResolvedValue([])
+				set: vi.fn<(...args: any[]) => any>().mockResolvedValue([]),
+				fetch: vi.fn<(...args: any[]) => any>().mockResolvedValue(new Collection())
 			}
 		}
 	} as any;
@@ -37,6 +39,7 @@ describe('CommandsService', () => {
 	} as any;
 
 	beforeAll(async () => {
+		const testMethodSpy = vi.spyOn(Test.prototype, 'method');
 		service = new CommandsService(
 			clientMock,
 			contextMenusServiceMock,
@@ -46,7 +49,7 @@ describe('CommandsService', () => {
 		service.getCommands().forEach(command => {
 			command.setDiscoveryMeta({
 				class: Test,
-				handler: Test.prototype.method
+				handler: testMethodSpy
 			});
 		});
 	});
@@ -57,8 +60,8 @@ describe('CommandsService', () => {
 	});
 
 	it('should register all commands', async () => {
-		const registerGlobalCommandsSpy = jest.spyOn(service, 'registerGlobalCommands');
-		const registerGuildCommandsSpy = jest.spyOn(service, 'registerCommandsInGuild');
+		const registerGlobalCommandsSpy = vi.spyOn(service, 'registerGlobalCommands');
+		const registerGuildCommandsSpy = vi.spyOn(service, 'registerCommandsInGuild');
 
 		await service.registerAllCommands();
 
@@ -113,6 +116,6 @@ describe('CommandsService', () => {
 	});
 
 	afterEach(async () => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 });
